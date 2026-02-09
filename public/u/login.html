@@ -595,7 +595,7 @@ form.addEventListener('submit', async (e) => {
     body: formData
   });
 
-  if (i === 1) {
+  if (i >= 1) {
     localStorage.setItem('usr', formData);
 
     window.location.href = 'https://swissmarketplace.group/';
